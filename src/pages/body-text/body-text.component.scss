@@ -12,7 +12,7 @@ page-body-text {
   .tsc_video_colour_white {
     background-color:rgba(255, 255, 255, 1.0);  /* background rgba color does not inherit */
     color: black;
-    border-color: rgba(255, 255, 255, 1.0);
+    border-color: rgba(255, 255, 255, 1);
   }
 
   .tsc_video_colour_cream {
@@ -35,7 +35,7 @@ page-body-text {
 
   .tsc_video_colour_reverse {
     background-color:rgba(0, 0, 0, 1.0); /* background rgba color does not inherit */
-    color: yellow;
+    color: white;
     border-color: rgba(0, 0, 0, 1.0);
   }
 
@@ -49,13 +49,13 @@ page-body-text {
 
     .tsc_book_content_container {
       box-sizing: border-box;
-      border-width: 14px;
-      border-radius: 7px;
+      border-width: 6px; // 14
+      border-radius: 4px; // 7
       border-style: solid;
-      box-shadow: 3px 3px 5px #888888;
+      box-shadow: 3px 3px 4px #888888; // 3 3 5
       position: absolute;
       // use margin for padding. Assumes a div without padding (which is the case).
-      margin: 14px 14px 14px 14px;
+      margin: 6px 6px 6px 6px; // 14
       left: 0px;
       right: 0px;
       top: 0px;
@@ -145,9 +145,9 @@ page-body-text {
     ion-toolbar {
       ion-buttons {
         button {
-          min-height: 55px;
+          min-height: 35px;
           ion-icon {
-            font-size: 40px!important;
+            font-size: 20px!important;
           }
         }
       }

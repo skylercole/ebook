@@ -60,6 +60,16 @@ smsc-book-content {
     column-break-inside: avoid;
   }
 
+  table.td {
+    width:50%;
+    padding-right:2px;
+    font-family: inherit;
+    background-color: inherit;
+    color: inherit;
+    margin-top: 1em;
+    margin-bottom: 0em;
+  }
+
   div {
     font-family: inherit;
     background-color: inherit;

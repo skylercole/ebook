@@ -27,9 +27,6 @@ import { PersistentDataService } from '../../app/services/persistent-data.servic
 //import { InterstitialAdsService } from '../../app/services/interstitial-ads.service';
 import { AnalyticsService } from '../../app/services/analytics-service';
 
-// hack: to get around (i.e. disable) type checking
-type AnyType = any;
-
 // animate() functions are "static" in that they are called one time and the parameters to animate() cannot be changed programmatically (that I know of)
 // No need to animate filter (i.e. shadow) because it is not visible to the eye
 @Component({
@@ -122,7 +119,7 @@ export class BodyText {
 
   // background-color and color selected for the book (i.e. videoColour)
   public videoColours = [
-    { label: 'White',
+    { label: 'Day',
       binding: {
                   'tsc_video_colour_white': true,
                   'tsc_video_colour_cream': false,
@@ -142,27 +139,27 @@ export class BodyText {
                 },
       style: {}
     }, */
-    { label: 'Gold',
-      binding: {
-                  'tsc_video_colour_white': false,
-                  'tsc_video_colour_cream': false,
-                  'tsc_video_colour_gold': true,
-                  'tsc_video_colour_dark_blue': false,
-                  'tsc_video_colour_reverse': false
-                },
-      style: {}
-    },
-    { label: 'DarkBlue',
-      binding: {
-                  'tsc_video_colour_white': false,
-                  'tsc_video_colour_cream': false,
-                  'tsc_video_colour_gold': false,
-                  'tsc_video_colour_dark_blue': true,
-                  'tsc_video_colour_reverse': false
-                },
-      style: {}
-    },
-    { label: 'Reverse',
+    // { label: 'Gold',
+    //   binding: {
+    //               'tsc_video_colour_white': false,
+    //               'tsc_video_colour_cream': false,
+    //               'tsc_video_colour_gold': true,
+    //               'tsc_video_colour_dark_blue': false,
+    //               'tsc_video_colour_reverse': false
+    //             },
+    //   style: {}
+    // },
+    // { label: 'DarkBlue',
+    //   binding: {
+    //               'tsc_video_colour_white': false,
+    //               'tsc_video_colour_cream': false,
+    //               'tsc_video_colour_gold': false,
+    //               'tsc_video_colour_dark_blue': true,
+    //               'tsc_video_colour_reverse': false
+    //             },
+    //   style: {}
+    // },
+    { label: 'Night',
       binding: {
                   'tsc_video_colour_white': false,
                   'tsc_video_colour_cream': false,
@@ -255,11 +252,14 @@ export class BodyText {
     this.animationLock.startCounter();
     this.animationLock.saveData(anchor); // save the anchor name
     setTimeout(()=>{ this.animateToAnchor(); }, 0);
+
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
 
   // begin animation of turning many pages.
   public animateToAnchor() {
-    if (this.animationLock.getCounter() == 8) {
+    if (this.animationLock.getCounter() == 4) {
       this.animationLock.unlock();
       this.scrollToAnchor(this.animationLock.getData());
     }
@@ -277,6 +277,9 @@ export class BodyText {
       this.changeDetectorRef.detectChanges();
       setTimeout(()=>{this.animateToAnchor();}, 0);
     }
+
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
 
   // scroll to the coordinate
@@ -708,6 +711,7 @@ export class BodyText {
                       caption: 'Font Size' }
                   );
     popover.present({ev: event});
+    this._popover = popover;
   }
 
   // callback from the PopoverController. font-size has changed. Set it accordingly.
@@ -735,6 +739,10 @@ export class BodyText {
 
       loading.dismiss();
     });
+
+    this._popover.dismiss();
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
 
   // user clicked to request popover for font change
@@ -747,6 +755,7 @@ export class BodyText {
                       caption: 'Font' }
                   );
     popover.present({ev: event});
+    this._popover = popover;
   }
 
   // callback from the PopoverController. font family has changed. Set it accordingly.
@@ -774,6 +783,10 @@ export class BodyText {
 
       loading.dismiss();
     });
+
+    this._popover.dismiss();
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
 
   // user clicked to request video color change
@@ -783,10 +796,11 @@ export class BodyText {
                     { hasChanged: (videoColourIdSelected: number)=>{this.videoColourHasChanged(videoColourIdSelected) },
                       styleBeforeChange: this.videoColourIdSelected,
                       choiceOfStyles: this.videoColours,
-                      caption: 'Colour'
+                      //caption: 'Color'
                     }
                   );
     popover.present({ ev: event });
+    this._popover = popover;
   }
 
   // callback from the PopoverController. page number has changed. Set it accordingly.
@@ -805,6 +819,10 @@ export class BodyText {
 
       loading.dismiss();
     });
+
+    this._popover.dismiss();
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
 
   // user clicked to request popover for "go to page number"
@@ -817,7 +835,7 @@ export class BodyText {
                       rangeCurrent: this.getCurrentTopPageForDisplayOnBook()
                     }
                   );
-    popover.present({ev: event});
+    popover.present({ev: event});    
   }
 
   // callback from the PopoverController. page number has changed. Set it accordingly.
@@ -833,5 +851,10 @@ export class BodyText {
     }
 
     this.scrollToCoordinate(coordinate);
+
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
   }
+
+  _popover :any;
 }

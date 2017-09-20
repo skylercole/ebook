@@ -3,7 +3,7 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title >Reading</ion-title>
+    <ion-title>Currently reading</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -77,7 +77,7 @@
 
 </ion-content>
 
-<ion-footer [style.opacity]="0.8" [style.z-index]="2"  [@toolbarAppear]="toolbarAppear">
+<ion-footer [style.opacity]="0.8" [style.z-index]="2"  [@toolbarAppear]="toolbarAppear" >
   <ion-toolbar>
     <ion-buttons start>
       <!-- (click) is used to trap the event and not (tap) because (tap) will result in multiple "clicks" on the 
@@ -91,10 +91,13 @@
         <ion-icon name="at"></ion-icon>Font Type
       </button>
       <button ion-button class="text-on-bottom" (click)="onVideoColourChange($event)">
-        <ion-icon name="easel"></ion-icon>Colour
+        <ion-icon name="easel"></ion-icon>Color
       </button>
-        <button ion-button class="text-on-bottom" (click)="onGoToPageNumber($event)">
+      <button ion-button class="text-on-bottom" (click)="onGoToPageNumber($event)">
         <ion-icon name="locate"></ion-icon>Go To
+      </button>
+      <button ion-button class="text-on-bottom" (click)="onLockPageOrientation($event)">
+        <ion-icon name="lock"></ion-icon>Lock
       </button>
     </ion-buttons>
   </ion-toolbar>

@@ -38,12 +38,12 @@ export class HammerPanService {
 
   // how much a Pan has to move before it is considered a full and completed Pan
   protected validPanRange(): number {
-    return (this.oneGestureDistance / 2);
+    return (this.oneGestureDistance / 2.5); // was 2
   }
 
   // Chops the range [0..1] into 3 segments. Animate the first segment fast. The other 2 segments slow.
   protected getSpeed(normalised: number): string {
-    return (normalised < 0.5) ? 'Fast' : 'Slow';
+    return (normalised < 0.2) ? 'Fast' : 'Slow'; // was 0.5
   }
 
   // distance = distance for pan to animate

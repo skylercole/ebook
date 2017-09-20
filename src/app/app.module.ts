@@ -6,7 +6,6 @@ import { StatusBar } from '@ionic-native/status-bar';
 
 import { MyApp } from './app.component';
 
-
 import { SmscClearIdsDirective } from './directives/smsc-clear-ids.directive';
 import { SmscColumnScrollDirective } from './directives/smsc-column-scroll.directive';
 import { SmscBookContentComponent } from './components/smsc-book-content.component';
