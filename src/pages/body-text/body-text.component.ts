@@ -27,6 +27,8 @@ import { PersistentDataService } from '../../app/services/persistent-data.servic
 //import { InterstitialAdsService } from '../../app/services/interstitial-ads.service';
 import { AnalyticsService } from '../../app/services/analytics-service';
 
+import { ScreenOrientation } from '@ionic-native/screen-orientation';
+
 // animate() functions are "static" in that they are called one time and the parameters to animate() cannot be changed programmatically (that I know of)
 // No need to animate filter (i.e. shadow) because it is not visible to the eye
 @Component({
@@ -170,7 +172,22 @@ export class BodyText {
       style: {}
     }
   ];
+
+  public lockPageStyles = [
+    { label: 'Unlocked Screen',
+      binding: { 'locked': false },
+      style: {}
+    },    
+    { label: 'Locked Screen',
+      binding: { 'locked': true },
+      style: {}
+    }
+  ];
+
   public videoColourIdSelected: number = 0;
+  public lockPage: number = 0;  
+
+  _screenOrientation : any;
 
   constructor(public navCtrl: NavController,
               private navParams: NavParams,
@@ -195,9 +212,11 @@ export class BodyText {
               //protected interstitialAdsService: InterstitialAdsService,
               protected analyticsService: AnalyticsService,
               statusBar: StatusBar,
-              insomnia: Insomnia
+              insomnia: Insomnia,
+              screenOrientation: ScreenOrientation
   ) {
     this._insomnia = insomnia;
+    this._screenOrientation = screenOrientation;
 
     let style:any = this.sanitizer.bypassSecurityTrustStyle(this.transformCommand);
     this.transformCommand = style;
@@ -436,7 +455,11 @@ export class BodyText {
         if (v) this.font = v; /* else rely on default */ 
         return this.persistentDataService.getItemFontSizeSelected();
       }).then( (v) => {
-        if (v) this.fontSize = v; /* else rely on default */
+        if (v) this.fontSize = v; /* else rely on default */ 
+        return this.persistentDataService.getItemLockPageOrientation();
+      }).then( (v) => {
+        if (v) this.lockPage = v; /* else rely on default */
+        this.lock();
         console.log('tsc: ionViewDidLoad() end initialisation');
 
         this.computeBookContentColumnWidth();
@@ -854,6 +877,49 @@ export class BodyText {
 
     this.toolbarAppear = 'hidden';
     this.commandPaletteModeLock.unlock();
+  }
+
+  // user clicked to request popover for "go to page number"
+  onLockPageOrientation(event: MouseEvent) {
+    let popover = this.popoverCtrl.create(
+      StyleChange,
+      { hasChanged: (lockPage: number)=>{this.LockPageOrientationHasChanged(lockPage) },
+        styleBeforeChange: this.lockPage,
+        choiceOfStyles: this.lockPageStyles
+      }
+    );
+    popover.present({ ev: event });
+    this._popover = popover;
+  }
+
+  // callback from the PopoverController. page number has changed. Set it accordingly.
+  LockPageOrientationHasChanged(lockPage: number) {
+    // if videoColor did not change from before the popover was presented, then do nothing
+    if (this.lockPage == lockPage) return;
+
+    // showing the "busy I am processing" indicator
+    let loading = this.loadingCtrl.create({});
+
+    loading.present().then(()=>{
+      // remember this as persistent
+      this.persistentDataService.setItemLockPageOrientation(lockPage);
+      // apply the lock page setting
+      this.lockPage = lockPage;
+      this.lock();
+
+      loading.dismiss();
+    });
+
+    this._popover.dismiss();
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
+  }
+
+  lock(){
+    if (this.lockPage > 0)
+      this._screenOrientation.lock(this._screenOrientation.type);
+    else
+      this._screenOrientation.unlock();
   }
 
   _popover :any;

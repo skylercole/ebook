@@ -55,6 +55,10 @@ export class PersistentDataService {
     this.setItem('PersistentVideoColourIdSelected', id);
   }
 
+  public setItemLockPageOrientation(id: number) {
+    this.setItem('PersistentLockPageOrientation', id);
+  }
+
   public getItemVideoColourIdSelected(): Promise<any> {
     return this.getItem('PersistentVideoColourIdSelected');
   }
@@ -73,6 +77,10 @@ export class PersistentDataService {
 
   public getItemFontSizeSelected(): Promise<any> {
     return this.getItem('PersistentFontSizeSelected');
+  }
+
+  public getItemLockPageOrientation(): Promise<any> {
+    return this.getItem('PersistentLockPageOrientation');
   }
 
   public getItemPageCoordinate(): Promise<any> {

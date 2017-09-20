@@ -18,6 +18,7 @@ import { Insomnia } from '@ionic-native/insomnia';
 import { Firebase } from '@ionic-native/firebase';
 import { NativeStorage } from '@ionic-native/native-storage';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ScreenOrientation } from '@ionic-native/screen-orientation';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     Insomnia,
     Firebase,
     NativeStorage,
+    ScreenOrientation,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
