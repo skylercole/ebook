@@ -25,7 +25,7 @@ import { HammerPanService, HammerPanEvent } from '../../app/services/hammer-pan.
 import { SemLockService } from '../../app/services/sem-lock.service';
 import { PersistentDataService } from '../../app/services/persistent-data.service';
 //import { InterstitialAdsService } from '../../app/services/interstitial-ads.service';
-import { AnalyticsService } from '../../app/services/analytics-service';
+//import { AnalyticsService } from '../../app/services/analytics-service';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
 
@@ -185,9 +185,11 @@ export class BodyText {
   ];
 
   public videoColourIdSelected: number = 0;
-  public lockPage: number = 0;  
 
+  public lockPage: number = 0;  
   _screenOrientation : any;
+  _popover :any;
+  _insomnia: any;
 
   constructor(public navCtrl: NavController,
               private navParams: NavParams,
@@ -210,7 +212,7 @@ export class BodyText {
               @Inject('SemLockService3') protected commandPaletteModeLock: SemLockService,
               protected persistentDataService: PersistentDataService,
               //protected interstitialAdsService: InterstitialAdsService,
-              protected analyticsService: AnalyticsService,
+              //protected analyticsService: AnalyticsService,
               statusBar: StatusBar,
               insomnia: Insomnia,
               screenOrientation: ScreenOrientation
@@ -223,8 +225,6 @@ export class BodyText {
 
     statusBar.hide();
   }
-
-  _insomnia: any;
 
   // to show page number on the book
   public getTotalPagesForDisplayOnBook() {
@@ -271,9 +271,6 @@ export class BodyText {
     this.animationLock.startCounter();
     this.animationLock.saveData(anchor); // save the anchor name
     setTimeout(()=>{ this.animateToAnchor(); }, 0);
-
-    this.toolbarAppear = 'hidden';
-    this.commandPaletteModeLock.unlock();
   }
 
   // begin animation of turning many pages.
@@ -296,9 +293,6 @@ export class BodyText {
       this.changeDetectorRef.detectChanges();
       setTimeout(()=>{this.animateToAnchor();}, 0);
     }
-
-    this.toolbarAppear = 'hidden';
-    this.commandPaletteModeLock.unlock();
   }
 
   // scroll to the coordinate
@@ -310,7 +304,9 @@ export class BodyText {
     // if the user is at Toc, do not remember this as the last persistent location to go back.
     let element: HTMLElement = this.document.getElementById(BodyText.beginningOfBookContentAnchor);
     let minCoordinate: number = this.scrollBookDistanceCounter.queryCoordinate(element);
-    if (coordinate >= minCoordinate) {
+    console.log("coord: " + coordinate + " " + "min"+ minCoordinate);
+    if (coordinate > minCoordinate) {   
+
       this.persistentDataService.setItemPageCoordinate(
               coordinate,
               coordinate / this.scrollBookDistanceCounter.maxRightColumnLeftCoordinate,
@@ -331,10 +327,10 @@ export class BodyText {
     let elementToJumpTo: HTMLElement = this.document.getElementById(anchorToJumpTo);
     this.scrollToElement(elementToJumpTo);
 
-    this.analyticsService.logEventOnTocGoto({
-      elementId: anchorToJumpTo,
-      innerHTML: elementToJumpTo.innerHTML
-    });
+    // this.analyticsService.logEventOnTocGoto({
+    //   elementId: anchorToJumpTo,
+    //   innerHTML: elementToJumpTo.innerHTML
+    // });
   }
 
   // size the div where the css column resides
@@ -353,6 +349,7 @@ export class BodyText {
     // Priority 1: scroll to first page of book (i.e. "Toc" or Table of Content).
     if ((!!anchorToScrollTo)) {
       this.scrollToAnchor(anchorToScrollTo);
+      console.log('navigate: 1 ' + anchorToScrollTo);
     }
     else {
       // user may quit with portrait orientation and start app up in landscape orientation
@@ -361,19 +358,28 @@ export class BodyText {
           // app runs for first time
           alternateAnchorToScrollTo = (!!alternateAnchorToScrollTo ? alternateAnchorToScrollTo : BodyText.beginningOfBookContentAnchor);
           this.scrollToAnchor(alternateAnchorToScrollTo);
+          console.log('navigate: 2 ' + alternateAnchorToScrollTo);
         }
         else if (data.height == this.topPage.elementRef.nativeElement.style.height &&
                  data.columnWidth == this.scrollBookDistanceCounter.sizePerColumn) {
             // no change in orientation of device. Just jump to cooridnate and all is well
             this.scrollToCoordinate(data.coordinate);
+
+            console.log('navigate: 3 ' + data.coordinate);
         }
         else {
           // Since orientation has changed, page numbers and position within the book will change. Try to position to the closest possible page.
           // Remember current normalised position
           this.scrollToRelativePosition(data.relativePosition);
+
+          console.log('navigate: 4 ' + data.relativePosition);
         }
       });
     }
+
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
+
     console.log('tsc: navigate() done');
   }
 
@@ -458,8 +464,10 @@ export class BodyText {
         if (v) this.fontSize = v; /* else rely on default */ 
         return this.persistentDataService.getItemLockPageOrientation();
       }).then( (v) => {
-        if (v) this.lockPage = v; /* else rely on default */
-        this.lock();
+        if (v) {
+          this.lockPage = v; /* else rely on default */
+          this.lock();
+        }
         console.log('tsc: ionViewDidLoad() end initialisation');
 
         this.computeBookContentColumnWidth();
@@ -611,10 +619,10 @@ export class BodyText {
     if ((e.fromState === 'pageNeutral') && (e.toState.includes('pageUp'))) {
       if (this.hammerPan.isPanLeft()) {
         this.scrollForwardOnePage();
-        this.analyticsService.logEventScrollForwardOnePage(
-          { fromPageNumber: this.getCurrentTopPageForDisplayOnBook(),
-            totalPages: this.getTotalPagesForDisplayOnBook() }
-        );
+        // this.analyticsService.logEventScrollForwardOnePage(
+        //   { fromPageNumber: this.getCurrentTopPageForDisplayOnBook(),
+        //     totalPages: this.getTotalPagesForDisplayOnBook() }
+        // );
       }
       else { // this means pan operation did not complete. go back to original pre-pan action
         this.scrollTopToPosition = this.scrollBookDistanceCounter.getCurrentScrollPosition();
@@ -623,10 +631,10 @@ export class BodyText {
     else if ((e.fromState === 'pageNeutral') && (e.toState.includes('pageDown'))) {
       if (this.hammerPan.isPanRight()) {
         this.scrollBackwardsOnePage();
-        this.analyticsService.logEventScrollBackwardsOnePage(
-          { fromPageNumber: this.getCurrentTopPageForDisplayOnBook(),
-            totalPages: this.getTotalPagesForDisplayOnBook() }
-        );
+        // this.analyticsService.logEventScrollBackwardsOnePage(
+        //   { fromPageNumber: this.getCurrentTopPageForDisplayOnBook(),
+        //     totalPages: this.getTotalPagesForDisplayOnBook() }
+        // );
       }
     }
 
@@ -819,7 +827,7 @@ export class BodyText {
                     { hasChanged: (videoColourIdSelected: number)=>{this.videoColourHasChanged(videoColourIdSelected) },
                       styleBeforeChange: this.videoColourIdSelected,
                       choiceOfStyles: this.videoColours,
-                      //caption: 'Color'
+                      caption: 'Color'
                     }
                   );
     popover.present({ ev: event });
@@ -879,7 +887,7 @@ export class BodyText {
     this.commandPaletteModeLock.unlock();
   }
 
-  // user clicked to request popover for "go to page number"
+  // user clicked to change lock page status
   onLockPageOrientation(event: MouseEvent) {
     let popover = this.popoverCtrl.create(
       StyleChange,
@@ -892,7 +900,7 @@ export class BodyText {
     this._popover = popover;
   }
 
-  // callback from the PopoverController. page number has changed. Set it accordingly.
+  // callback from the PopoverController. set lock page status.
   LockPageOrientationHasChanged(lockPage: number) {
     // if videoColor did not change from before the popover was presented, then do nothing
     if (this.lockPage == lockPage) return;
@@ -921,6 +929,4 @@ export class BodyText {
     else
       this._screenOrientation.unlock();
   }
-
-  _popover :any;
 }

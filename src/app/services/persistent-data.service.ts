@@ -26,9 +26,13 @@ export class PersistentDataService {
       this._nativeStorage.getItem(reference).then(
         (data) => {
           resolve(data);
+          
+          if (reference == "PersistentPageCoordinate")
+            console.log(reference + " " + data.coordinate + ", " +
+              data.relativePosition + ", " + data.columnWidth + ", " + data.height);          
         },
         (error) => {
-          resolve(this.getItemFailed(reference));
+          resolve(this.getItemFailed(reference));     
         }
       );
     });
@@ -38,9 +42,16 @@ export class PersistentDataService {
 
   protected setItem(reference: string, value: AnyType) {
     this._nativeStorage.setItem(reference, value).then(
-      () => { },
+      () => { 
+        if (reference == "PersistentPageCoordinate")
+          console.log(reference + " " + value.coordinate + ", " +
+            value.relativePosition + ", " + value.columnWidth + ", " + value.height); 
+      },
       (error) => { 
         this.db[reference] = value; 
+        if (reference == "PersistentPageCoordinate")
+          console.log("error saving: " + reference + " " + value.coordinate + ", " +
+            value.relativePosition + ", " + value.columnWidth + ", " + value.height);
       }
     );
   }
@@ -55,12 +66,16 @@ export class PersistentDataService {
     this.setItem('PersistentVideoColourIdSelected', id);
   }
 
-  public setItemLockPageOrientation(id: number) {
-    this.setItem('PersistentLockPageOrientation', id);
-  }
-
   public getItemVideoColourIdSelected(): Promise<any> {
     return this.getItem('PersistentVideoColourIdSelected');
+  }
+
+  public setItemLockPageOrientation(lock: number) {
+    this.setItem('PersistentLockPageOrientation', lock);
+  }
+
+  public getItemLockPageOrientation(): Promise<any> {
+    return this.getItem('PersistentLockPageOrientation');
   }
 
   public setItemFontSelected(font: number) {
@@ -79,10 +94,6 @@ export class PersistentDataService {
     return this.getItem('PersistentFontSizeSelected');
   }
 
-  public getItemLockPageOrientation(): Promise<any> {
-    return this.getItem('PersistentLockPageOrientation');
-  }
-
   public getItemPageCoordinate(): Promise<any> {
     return this.getItem('PersistentPageCoordinate');
   }
@@ -99,6 +110,12 @@ export class PersistentDataService {
           columnWidth: columnWidth,
           height: height
     };
+    console.log("saving: " + coordinate + ", " +
+      relativePosition + ", " + columnWidth + ", " + height);
+
+    if (height == undefined)
+      height = 0;
+    
     this.setItem('PersistentPageCoordinate', data);
   }
 };
