@@ -28,6 +28,8 @@ import { PersistentDataService } from '../../app/services/persistent-data.servic
 //import { AnalyticsService } from '../../app/services/analytics-service';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation';
+import { SplashScreen } from '@ionic-native/splash-screen';
+import { ToastController } from 'ionic-angular';
 
 // animate() functions are "static" in that they are called one time and the parameters to animate() cannot be changed programmatically (that I know of)
 // No need to animate filter (i.e. shadow) because it is not visible to the eye
@@ -189,7 +191,8 @@ export class BodyText {
   public lockPage: number = 0;  
   _screenOrientation : any;
   _popover :any;
-  _insomnia: any;
+  _insomnia : any;
+  _splashScreen : any;
 
   constructor(public navCtrl: NavController,
               private navParams: NavParams,
@@ -215,10 +218,13 @@ export class BodyText {
               //protected analyticsService: AnalyticsService,
               statusBar: StatusBar,
               insomnia: Insomnia,
-              screenOrientation: ScreenOrientation
+              screenOrientation: ScreenOrientation,
+              splashScreen: SplashScreen,
+              public toastCtrl: ToastController
   ) {
     this._insomnia = insomnia;
     this._screenOrientation = screenOrientation;
+    this._splashScreen = splashScreen;  
 
     let style:any = this.sanitizer.bypassSecurityTrustStyle(this.transformCommand);
     this.transformCommand = style;
@@ -380,7 +386,10 @@ export class BodyText {
     this.toolbarAppear = 'hidden';
     this.commandPaletteModeLock.unlock();
 
+    this._splashScreen.hide();
+
     console.log('tsc: navigate() done');
+    
   }
 
   ionViewDidEnter2() {
@@ -889,39 +898,62 @@ export class BodyText {
 
   // user clicked to change lock page status
   onLockPageOrientation(event: MouseEvent) {
-    let popover = this.popoverCtrl.create(
-      StyleChange,
-      { hasChanged: (lockPage: number)=>{this.LockPageOrientationHasChanged(lockPage) },
-        styleBeforeChange: this.lockPage,
-        choiceOfStyles: this.lockPageStyles
-      }
-    );
-    popover.present({ ev: event });
-    this._popover = popover;
+    // let popover = this.popoverCtrl.create(
+    //   StyleChange,
+    //   { hasChanged: (lockPage: number)=>{this.LockPageOrientationHasChanged(lockPage) },
+    //     styleBeforeChange: this.lockPage,
+    //     choiceOfStyles: this.lockPageStyles
+    //   }
+    // );
+    // popover.present({ ev: event });
+    // this._popover = popover; 
+
+    if (this.lockPage == 0) {
+      this._screenOrientation.lock(this._screenOrientation.type);
+      this.lockPage = 1;
+      this.toast('Device orientation locked.');
+    }
+    else {
+      this._screenOrientation.unlock();
+      this.lockPage = 0;
+      this.toast('Device orientation unlocked.');      
+    }
+
+    this.toolbarAppear = 'hidden';
+    this.commandPaletteModeLock.unlock();
+    this.persistentDataService.setItemLockPageOrientation(this.lockPage);
+  }
+
+  toast(text){
+    let toast = this.toastCtrl.create({
+      message: text,
+      duration: 2800
+    });
+    toast.present();
   }
 
   // callback from the PopoverController. set lock page status.
-  LockPageOrientationHasChanged(lockPage: number) {
-    // if videoColor did not change from before the popover was presented, then do nothing
-    if (this.lockPage == lockPage) return;
+  // LockPageOrientationHasChanged(lockPage: number) {
+  //   // if videoColor did not change from before the popover was presented, then do nothing
+  //   if (this.lockPage == lockPage) return;
 
-    // showing the "busy I am processing" indicator
-    let loading = this.loadingCtrl.create({});
+  //   // showing the "busy I am processing" indicator
+  //   let loading = this.loadingCtrl.create({});
 
-    loading.present().then(()=>{
-      // remember this as persistent
-      this.persistentDataService.setItemLockPageOrientation(lockPage);
-      // apply the lock page setting
-      this.lockPage = lockPage;
-      this.lock();
+  //   loading.present().then(()=>{
+  //     // remember this as persistent
+  //     this.persistentDataService.setItemLockPageOrientation(lockPage);
+  //     // apply the lock page setting
+  //     this.lockPage = lockPage;
+  //     this.lock();
 
-      loading.dismiss();
-    });
+  //     loading.dismiss();
+  //   });
 
-    this._popover.dismiss();
-    this.toolbarAppear = 'hidden';
-    this.commandPaletteModeLock.unlock();
-  }
+  //   this._popover.dismiss();
+  //   this.toolbarAppear = 'hidden';
+  //   this.commandPaletteModeLock.unlock();
+  // }
 
   lock(){
     if (this.lockPage > 0)
